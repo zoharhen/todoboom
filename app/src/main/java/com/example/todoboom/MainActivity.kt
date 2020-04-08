@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 
 
-data class TodoItem(val description: String, val isDone: Boolean = false)
+data class TodoItem(val description: String, var isDone: Boolean = false)
 
 class MainActivity : AppCompatActivity() {
 

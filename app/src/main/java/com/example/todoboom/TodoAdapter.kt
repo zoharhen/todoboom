@@ -1,5 +1,6 @@
 package com.example.todoboom
 
+import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +9,7 @@ import android.widget.CheckBox
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
+
 
 class TodoAdapter internal constructor(context: Context, data: MutableList<TodoItem>) :
     RecyclerView.Adapter<TodoAdapter.ViewHolder>() {
@@ -41,10 +43,24 @@ class TodoAdapter internal constructor(context: Context, data: MutableList<TodoI
 
             itemView.setOnClickListener{
                 if (!checkBox.isChecked) {
+                    todo.isDone = true
                     checkBox.isChecked = true
                     Toast.makeText(cnt, "TODO ${description.text} is now DONE. BOOM!", Toast.LENGTH_LONG).show()
 
                 }
+            }
+
+            itemView.setOnLongClickListener{
+                val alertdDialog = AlertDialog.Builder(it.context)
+                alertdDialog.setTitle("Are You Sure to delete?")
+                alertdDialog.setPositiveButton("Delete") {
+                        dialog, which -> items.removeAt(adapterPosition); notifyDataSetChanged()
+                }
+                alertdDialog.setNegativeButton("Cancle") {
+                        dialog, which -> dialog.cancel()
+                }
+                alertdDialog.show()
+                true
             }
         }
     }
