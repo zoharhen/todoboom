@@ -2,6 +2,7 @@ package com.example.todoboom
 
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
@@ -10,7 +11,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.activity_main.*
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 
 data class TodoItem(val description: String, var isDone: Boolean = false)
@@ -25,15 +27,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        loadList()
+
         adapter = TodoAdapter(this, items)
         initRecyclerview()
 
         val button: Button = findViewById(R.id.add_button)
         button.setOnClickListener { clearTextAndAddTodo(it) }
+
+        Log.i("MainActivity_onCreate", "Items list size: ${items.size}");
     }
 
     private fun initRecyclerview() {
-
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL ,false)
         recyclerView.adapter = adapter
@@ -49,6 +54,7 @@ class MainActivity : AppCompatActivity() {
         clearTextAndHideKeyboard(it, inputText)
         items.add(TodoItem(lastText))
         adapter?.notifyItemInserted(items.size- 1)
+        saveList()
     }
 
     private fun clearTextAndHideKeyboard(it: View, inputText: EditText) {
@@ -57,4 +63,18 @@ class MainActivity : AppCompatActivity() {
         manager.hideSoftInputFromWindow(it.windowToken, 0)
     }
 
+    fun saveList() {
+        val editor = getSharedPreferences("todoList", 0).edit()
+        val json = Gson().toJson(items)
+        editor.putString("userInput", json)
+        editor.apply()
+    }
+
+    private fun loadList() {
+        val json = getSharedPreferences("todoList", 0).getString("userInput", null)
+        val type = object : TypeToken<MutableList<TodoItem>?>() {}.type
+        if (json != null) {
+            items = Gson().fromJson(json, type)
+        }
+    }
 }
