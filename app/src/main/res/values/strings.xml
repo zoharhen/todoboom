@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">todoboom</string>
-    <string name="enter_text_here">Enter text here!</string>
+    <string name="enter_text_here">Enter new TODO item:</string>
 
 </resources>
