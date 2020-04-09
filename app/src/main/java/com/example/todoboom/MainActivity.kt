@@ -29,13 +29,25 @@ class MainActivity : AppCompatActivity() {
 
         loadList()
 
-        adapter = TodoAdapter(this, items)
+        initAdapter()
         initRecyclerview()
-
-        val button: Button = findViewById(R.id.add_button)
-        button.setOnClickListener { clearTextAndAddTodo(it) }
+        initButton()
 
         Log.i("MainActivity_onCreate", "Items list size: ${items.size}");
+    }
+
+    private fun initButton() {
+        val button: Button = findViewById(R.id.add_button)
+        button.setOnClickListener { clearTextAndAddTodo(it) }
+    }
+
+    private fun initAdapter() {
+        val onListChangeListener = object : TodoAdapter.OnListChangeListener {
+            override fun OnListChange() {
+                saveList()
+            }
+        }
+        adapter = TodoAdapter(this, items, onListChangeListener)
     }
 
     private fun initRecyclerview() {
@@ -63,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         manager.hideSoftInputFromWindow(it.windowToken, 0)
     }
 
-    fun saveList() {
+    private fun saveList() {
         val editor = getSharedPreferences("todoList", 0).edit()
         val json = Gson().toJson(items)
         editor.putString("userInput", json)

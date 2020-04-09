@@ -11,7 +11,8 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 
 
-class TodoAdapter internal constructor(context: Context, data: MutableList<TodoItem>) :
+class TodoAdapter internal constructor(context: Context, data: MutableList<TodoItem>,
+                                       private var onListChangeListener: OnListChangeListener) :
     RecyclerView.Adapter<TodoAdapter.ViewHolder>() {
 
     private val items: MutableList<TodoItem> = data
@@ -45,6 +46,7 @@ class TodoAdapter internal constructor(context: Context, data: MutableList<TodoI
                 if (!checkBox.isChecked) {
                     todo.isDone = true
                     checkBox.isChecked = true
+                    onListChangeListener.OnListChange()
                     Toast.makeText(cnt, "TODO ${description.text} is now DONE. BOOM!", Toast.LENGTH_LONG).show()
 
                 }
@@ -54,7 +56,7 @@ class TodoAdapter internal constructor(context: Context, data: MutableList<TodoI
                 val alertdDialog = AlertDialog.Builder(it.context)
                 alertdDialog.setTitle("Are You Sure to delete?")
                 alertdDialog.setPositiveButton("Delete") {
-                        dialog, which -> items.removeAt(adapterPosition); notifyDataSetChanged()
+                        dialog, which -> items.removeAt(adapterPosition); notifyDataSetChanged(); onListChangeListener.OnListChange()
                 }
                 alertdDialog.setNegativeButton("Cancle") {
                         dialog, which -> dialog.cancel()
@@ -63,5 +65,9 @@ class TodoAdapter internal constructor(context: Context, data: MutableList<TodoI
                 true
             }
         }
+    }
+
+    interface OnListChangeListener {
+        fun OnListChange()
     }
 }
