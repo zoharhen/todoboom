@@ -14,9 +14,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-
-data class TodoItem(val description: String, var isDone: Boolean = false)
-
 class MainActivity : AppCompatActivity() {
 
     private var adapter: TodoAdapter? = null

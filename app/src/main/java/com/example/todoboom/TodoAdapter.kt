@@ -39,12 +39,12 @@ class TodoAdapter internal constructor(context: Context, data: MutableList<TodoI
         var checkBox: CheckBox = itemView.findViewById(R.id.checkBox)
 
         fun bind(todo: TodoItem) {
-            description.text = todo.description
-            checkBox.isChecked = todo.isDone
+            description.text = todo.getContent()
+            checkBox.isChecked = todo.getIsDone()
 
             itemView.setOnClickListener{
                 if (!checkBox.isChecked) {
-                    todo.isDone = true
+                    todo.setIsDone(true)
                     checkBox.isChecked = true
                     onListChangeListener.OnListChange()
                     Toast.makeText(cnt, "TODO ${description.text} is now DONE. BOOM!", Toast.LENGTH_LONG).show()
