@@ -1,6 +1,7 @@
 package com.example.todoboom
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -13,24 +14,26 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.android.synthetic.main.todo_item.view.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), TodoAdapter.ItemClickListener {
 
     private var adapter: TodoAdapter? = null
     private lateinit var recyclerView: RecyclerView
-    var items: MutableList<TodoItem> = mutableListOf()
+    private var itemsHolder: DataHolder = DataHolder
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        loadList()
+        loadData()
 
-        initAdapter()
+        adapter = TodoAdapter(this)
         initRecyclerview()
+        initDataListener()
         initButton()
 
-        Log.i("MainActivity_onCreate", "Items list size: ${items.size}");
+        Log.i("MainActivity_onCreate", "Items list size: ${itemsHolder.getSize()}");
     }
 
     private fun initButton() {
@@ -38,19 +41,19 @@ class MainActivity : AppCompatActivity() {
         button.setOnClickListener { clearTextAndAddTodo(it) }
     }
 
-    private fun initAdapter() {
-        val onListChangeListener = object : TodoAdapter.OnListChangeListener {
-            override fun OnListChange() {
-                saveList()
-            }
-        }
-        adapter = TodoAdapter(this, items, onListChangeListener)
-    }
-
     private fun initRecyclerview() {
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL ,false)
         recyclerView.adapter = adapter
+    }
+
+    private fun initDataListener() {
+        val onListChangeListener = object : DataHolder.OnListChangeListener {
+            override fun onListChange() {
+                saveData()
+            }
+        }
+        itemsHolder.setOnListChangeListener(onListChangeListener)
     }
 
     private fun clearTextAndAddTodo(it: View) {
@@ -61,9 +64,8 @@ class MainActivity : AppCompatActivity() {
             return
         }
         clearTextAndHideKeyboard(it, inputText)
-        items.add(TodoItem(lastText))
-        adapter?.notifyItemInserted(items.size- 1)
-        saveList()
+        itemsHolder.addTodo(TodoItem(lastText))
+        adapter?.notifyDataSetChanged()
     }
 
     private fun clearTextAndHideKeyboard(it: View, inputText: EditText) {
@@ -72,18 +74,31 @@ class MainActivity : AppCompatActivity() {
         manager.hideSoftInputFromWindow(it.windowToken, 0)
     }
 
-    private fun saveList() {
+    private fun saveData() {
         val editor = getSharedPreferences("todoList", 0).edit()
-        val json = Gson().toJson(items)
+        val json = Gson().toJson(itemsHolder.getAllTodos())
         editor.putString("userInput", json)
         editor.apply()
     }
 
-    private fun loadList() {
+    private fun loadData() {
         val json = getSharedPreferences("todoList", 0).getString("userInput", null)
         val type = object : TypeToken<MutableList<TodoItem>?>() {}.type
         if (json != null) {
-            items = Gson().fromJson(json, type)
+            itemsHolder.setListOfTodos(Gson().fromJson(json, type))
         }
     }
+
+    override fun onItemClick(view: View, id: String) {
+        val nextActivity = if (view.checkBox.isChecked) CompletedItem::class.java else UncompletedItem::class.java
+        val intent = Intent(this, nextActivity)
+        intent.putExtra("id", id)
+        startActivity(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adapter?.notifyDataSetChanged()
+    }
+
 }

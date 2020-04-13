@@ -1,23 +1,19 @@
 package com.example.todoboom
 
-import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 
 
-class TodoAdapter internal constructor(context: Context, data: MutableList<TodoItem>,
-                                       private var onListChangeListener: OnListChangeListener) :
+class TodoAdapter internal constructor(context: Context) :
     RecyclerView.Adapter<TodoAdapter.ViewHolder>() {
 
-    private val items: MutableList<TodoItem> = data
-    private val inflater: LayoutInflater = LayoutInflater.from(context)
     private val cnt: Context = context
+    private val inflater: LayoutInflater = LayoutInflater.from(context)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view: View = inflater.inflate(R.layout.todo_item, parent, false)
@@ -25,12 +21,12 @@ class TodoAdapter internal constructor(context: Context, data: MutableList<TodoI
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item: TodoItem = items[position]
+        val item: TodoItem = DataHolder.getTodoFromPosition(position)
         holder.bind(item)
     }
 
     override fun getItemCount(): Int {
-        return items.size
+        return DataHolder.getSize()
     }
 
     inner class ViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -42,32 +38,12 @@ class TodoAdapter internal constructor(context: Context, data: MutableList<TodoI
             description.text = todo.getContent()
             checkBox.isChecked = todo.getIsDone()
 
-            itemView.setOnClickListener{
-                if (!checkBox.isChecked) {
-                    todo.setIsDone(true)
-                    checkBox.isChecked = true
-                    onListChangeListener.OnListChange()
-                    Toast.makeText(cnt, "TODO ${description.text} is now DONE. BOOM!", Toast.LENGTH_LONG).show()
-
-                }
-            }
-
-            itemView.setOnLongClickListener{
-                val alertdDialog = AlertDialog.Builder(it.context)
-                alertdDialog.setTitle("Are You Sure to delete?")
-                alertdDialog.setPositiveButton("Delete") {
-                        dialog, which -> items.removeAt(adapterPosition); notifyDataSetChanged(); onListChangeListener.OnListChange()
-                }
-                alertdDialog.setNegativeButton("Cancle") {
-                        dialog, which -> dialog.cancel()
-                }
-                alertdDialog.show()
-                true
-            }
+            itemView.setOnClickListener { (cnt as ItemClickListener).onItemClick(itemView, todo.id); notifyDataSetChanged() }
         }
     }
 
-    interface OnListChangeListener {
-        fun OnListChange()
+    interface ItemClickListener {
+        fun onItemClick(view: View, id: String)
     }
+
 }

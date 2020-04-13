@@ -8,9 +8,9 @@ import java.util.*
 data class TodoItem(private var content: String, private var isDone: Boolean = false) : Serializable {
 
     @Expose(serialize = false, deserialize = false)
-    private val DATE_FORMAT: String = "dd/M/yyyy hh:mm:ss" // issue saving a SimpleDateFormat data member
+    private val DATE_FORMAT: String = "dd/M/yyyy hh:mm:ss" // issue with GSON lib when saving a SimpleDateFormat data member
 
-    val id: UUID = UUID.randomUUID()
+    val id: String = UUID.randomUUID().toString()
     val creationTimestamp: String = SimpleDateFormat(DATE_FORMAT).format(Date())
     var editTimestamp: String = SimpleDateFormat(DATE_FORMAT).format(Date())
 
