@@ -12,8 +12,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.todo_item.view.*
 
 class MainActivity : AppCompatActivity(), TodoAdapter.ItemClickListener {
@@ -25,8 +23,6 @@ class MainActivity : AppCompatActivity(), TodoAdapter.ItemClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        loadData()
 
         adapter = TodoAdapter(this)
         initRecyclerview()
@@ -50,7 +46,7 @@ class MainActivity : AppCompatActivity(), TodoAdapter.ItemClickListener {
     private fun initDataListener() {
         val onListChangeListener = object : DataHolder.OnListChangeListener {
             override fun onListChange() {
-                saveData()
+                adapter?.notifyDataSetChanged();
             }
         }
         itemsHolder.setOnListChangeListener(onListChangeListener)
@@ -64,7 +60,8 @@ class MainActivity : AppCompatActivity(), TodoAdapter.ItemClickListener {
             return
         }
         clearTextAndHideKeyboard(it, inputText)
-        itemsHolder.addTodo(TodoItem(lastText))
+        val newItem = TodoItem(lastText)
+        itemsHolder.addTodo(newItem)
         adapter?.notifyDataSetChanged()
     }
 
@@ -72,21 +69,6 @@ class MainActivity : AppCompatActivity(), TodoAdapter.ItemClickListener {
         inputText.text.clear()
         val manager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         manager.hideSoftInputFromWindow(it.windowToken, 0)
-    }
-
-    private fun saveData() {
-        val editor = getSharedPreferences("todoList", 0).edit()
-        val json = Gson().toJson(itemsHolder.getAllTodos())
-        editor.putString("userInput", json)
-        editor.apply()
-    }
-
-    private fun loadData() {
-        val json = getSharedPreferences("todoList", 0).getString("userInput", null)
-        val type = object : TypeToken<MutableList<TodoItem>?>() {}.type
-        if (json != null) {
-            itemsHolder.setListOfTodos(Gson().fromJson(json, type))
-        }
     }
 
     override fun onItemClick(view: View, id: String) {
